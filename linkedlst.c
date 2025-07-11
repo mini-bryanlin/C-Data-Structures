@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "./linked.h"
+#include <stdio.h>
 struct Node {
     int value;
     struct Node *next;
@@ -20,13 +21,14 @@ void add_to_list (struct Node ** list, int num ){
 }
 
 void print_list (struct Node * list){
-    while (list->value){
+    while (list!=NULL){
         printf("%d", list->value);
-        if(list->next){
-            printf(" -> ");
-        }
+        
+        printf(" -> ");
+        
         list = list->next;
     }
+    puts("NULL");
 }
 
 
