@@ -7,6 +7,7 @@ struct Node {
     struct Node *next;
 };
 
+
 struct Node * create(){
     struct Node * start = NULL;
     return start;
@@ -20,6 +21,41 @@ void add_to_list (struct Node ** list, int num ){
     *list = new_node;
 }
 
+void del (struct Node ** list, int num){
+
+    struct Node * prev = NULL;
+    struct Node * curr = *list;
+    while (curr != NULL){
+        if (curr->value == num){
+            if (prev == NULL){
+                *list = curr->next;
+            }
+            else{
+            prev->next = curr->next;
+            }
+            free(curr);
+            break;
+        }
+        prev = curr;
+        curr = curr->next;
+
+
+    }
+
+}
+
+int len (struct Node *list){
+    int length = 0;
+    while (list != NULL){
+        length ++;
+        list = list->next;
+
+    }
+    return length;
+}
+
+
+
 void print_list (struct Node * list){
     while (list!=NULL){
         printf("%d", list->value);
@@ -30,5 +66,7 @@ void print_list (struct Node * list){
     }
     puts("NULL");
 }
+
+
 
 
