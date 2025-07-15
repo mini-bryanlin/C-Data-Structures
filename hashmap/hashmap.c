@@ -63,11 +63,14 @@ static int get_hash(const char* string, const int bucket_num, const int attempt)
 }
 
 void insert (struct hm_table * hashmap, char * key, char * value ){
+    if (hashmap -> count >= hashmap-> size){
+        return;
+    }
     struct hm_item * new_item = new_hashmap_items(key,value);
     int index = get_hash(new_item->key, hashmap->size, 0);
     struct hm_item * current = hashmap->items[index];
     int i = 1;
-    while (current != NULL){
+    while (current != NULL && current != &DELETED_ITEM){
         index = get_hash(new_item->key, hashmap->size, i);
         current = hashmap -> items[index];
         i++;
@@ -81,15 +84,46 @@ char * search(struct hm_table *hashmap, char* key){
     int i = 1;
     struct hm_item *item = hashmap -> items[index];
     while (item != NULL){
-        if (strcmp(item->key, key) ==0){
-            return item-> value;
-        }
+        if (item != &DELETED_ITEM){
+            if (strcmp(item->key, key) ==0){
+                return item-> value;
+            }
+    }
         index = get_hash(key, hashmap->size, i);
         item = hashmap -> items[index];
         i++;
     }
     return NULL;
 }
-void del (struct hm_table *, const char * key){
+static struct hm_item DELETED_ITEM = {NULL,NULL};
+void del (struct hm_table * hashmap, const char * key){
+    int index = get_hash(key, hashmap->size, 0);
+    struct hm_item * item = hashmap -> items[index];
+    int i = 1;
+    while (item != NULL){
+        if (item != &DELETED_ITEM ){
+            if (strcmp(item->key, key) == 0){
+                delete_item(item);
+                hashmap -> items[index] = &DELETED_ITEM;
+            }
+        }
+        index = get_hash(key, hashmap -> size, i);
+        item = 
+        i++;
+    }
+    hashmap -> count --;
+}
+
+void update (struct hm_table * hashmap, char * key , char * new_value){
+    int index = get_hash(key, hashmap->size, 0);
+    struct hm_item * item = hashmap -> items[index];
+
+    while (item != NULL && item != &DELETED_ITEM){
+        if (strcmp(item->key, key) == 0){
+            item -> value = new_value;
+            return;
+        }
+    }
     
+
 }
