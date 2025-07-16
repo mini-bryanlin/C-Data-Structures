@@ -6,7 +6,8 @@ struct hm_item {
 struct hm_table{
     int size;
     int count;
-    hm_item** items;
+    struct hm_item** items;
+    int base_size;
 };
 struct hm_table * new_hashmap_table (void);
 

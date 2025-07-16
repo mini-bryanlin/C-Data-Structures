@@ -22,7 +22,7 @@ static struct hm_table * new_sized_hm(const int base_size){
     hashmap -> size = next_prime(base_size);
     hashmap -> count = 0;
     hashmap -> items = calloc(hashmap -> size, sizeof(struct hm_item *));
-
+    hashmap -> base_size = base_size;
     return hashmap;
 }
 
@@ -68,7 +68,7 @@ static int get_hash(const char* string, const int bucket_num, const int attempt)
     return (hash_a+(attempt*(hash_b+1)))% bucket_num;
 }
 
-void insert (struct hm_table * hashmap, char * key, char * value ){
+void insert (struct hm_table * hashmap, const char * key, const char * value ){
     if (hashmap -> count >= hashmap-> size){
         return;
     }
@@ -85,7 +85,7 @@ void insert (struct hm_table * hashmap, char * key, char * value ){
     hashmap -> items[index] = new_item;
     hashmap -> count ++;
 }
-char * search(struct hm_table *hashmap, char* key){
+char * search(struct hm_table *hashmap, const char* key){
     int index = get_hash(key, hashmap -> size, 0);
     int i = 1;
     struct hm_item *item = hashmap -> items[index];
@@ -131,5 +131,19 @@ void update (struct hm_table * hashmap, char * key , char * new_value){
         }
     }
     
+}
+static void resize(struct hm_table * hashmap, const int base_size){
+    if (base_size < HM_INIT_SIZE){ // init size also the minimum size
+        return;
+    }
+    struct hm_table * new_map = new_sized_hm(base_size);
+    for (int i = 0; i< hashmap-> size; i++){
+        struct hm_item* item = hashmap -> items[0];
+        if (item != NULL && item != &DELETED_ITEM){
+            insert(new_map,item->key, item->value);
+        }
+
+    }
+
 
 }
