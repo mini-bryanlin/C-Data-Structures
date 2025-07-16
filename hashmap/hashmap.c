@@ -27,6 +27,7 @@ static struct hm_table * new_sized_hm(const int base_size){
 }
 
 
+
 struct hm_table * new_hashmap_table (void){
     return new_sized_hm(HM_INIT_SIZE);
 
@@ -42,7 +43,7 @@ static void delete_item(struct hm_item *i){
 static void delete_hashmap(struct hm_table *table){
     for (int i = 0; i< table->size; i ++){
         struct hm_item * item = *((table->items)+i);
-        if (item != NULL){
+        if (item != NULL && item != &DELETED_ITEM){
             delete_item(item);
         }
 
@@ -71,6 +72,10 @@ static int get_hash(const char* string, const int bucket_num, const int attempt)
 void insert (struct hm_table * hashmap, const char * key, const char * value ){
     if (hashmap -> count >= hashmap-> size){
         return;
+    }
+    const int load = (hashmap->count/ hashmap->size)*100;
+    if (load > 70){
+        hashmap = size_up(hashmap);
     }
     struct hm_item * new_item = new_hashmap_items(key,value);
     int index = get_hash(new_item->key, hashmap->size, 0);
@@ -118,6 +123,11 @@ void del (struct hm_table * hashmap, const char * key){
         i++;
     }
     hashmap -> count --;
+
+    const int load = (hashmap->count/ hashmap->size)*100;
+    if (load < 10){
+        hashmap = size_down(hashmap);
+    }
 }
 
 void update (struct hm_table * hashmap, char * key , char * new_value){
@@ -132,18 +142,33 @@ void update (struct hm_table * hashmap, char * key , char * new_value){
     }
     
 }
-static void resize(struct hm_table * hashmap, const int base_size){
+static struct hm_table * resize(struct hm_table * hashmap, const int base_size){
     if (base_size < HM_INIT_SIZE){ // init size also the minimum size
-        return;
+        return hashmap;
     }
     struct hm_table * new_map = new_sized_hm(base_size);
     for (int i = 0; i< hashmap-> size; i++){
-        struct hm_item* item = hashmap -> items[0];
+        struct hm_item* item = hashmap -> items[i];
         if (item != NULL && item != &DELETED_ITEM){
             insert(new_map,item->key, item->value);
         }
 
     }
 
+    delete_hashmap(hashmap);
+    return new_map;
 
+
+}
+
+static struct hm_table * size_up(struct hm_table * old_table){
+    int new_size = (old_table-> base_size) *2;
+    struct hm_table * new_table = resize(old_table, new_size);
+    return new_table;
+}
+
+static struct hm_table * size_down(struct hm_table * old_table){
+    int new_size = (old_table-> base_size)/2;
+    struct hm_table * new_table = resize(old_table, new_size);
+    return new_table;
 }
