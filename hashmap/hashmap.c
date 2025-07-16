@@ -2,9 +2,10 @@
 #include <string.h>
 #include <math.h>
 #include "./hashmap.h"
+#include "prime.h"
 #define PRIME_1 151
 #define PRIME_2 163
-
+#define HM_INIT_SIZE 50
 static struct hm_item* new_hashmap_items(const char * key, const char * value){
 
     struct hm_item *i = malloc(sizeof(struct hm_item));
@@ -14,15 +15,20 @@ static struct hm_item* new_hashmap_items(const char * key, const char * value){
     return i;
 
 }
+static struct hm_table * new_sized_hm(const int base_size){
+    struct hm_table* hashmap = malloc(sizeof(struct hm_table));
+    if (hashmap == NULL){return;}
+    // hashmap -> base_size = base_size;
+    hashmap -> size = next_prime(base_size);
+    hashmap -> count = 0;
+    hashmap -> items = calloc(hashmap -> size, sizeof(struct hm_item *));
+
+    return hashmap;
+}
+
 
 struct hm_table * new_hashmap_table (void){
-    struct hm_table * hashmap = malloc(sizeof(struct hm_table));
-
-    hashmap ->size = 53;
-    hashmap -> count = 0;
-    hashmap -> items = calloc(hashmap->size, sizeof(struct hm_item*));
-    
-    return hashmap;
+    return new_sized_hm(HM_INIT_SIZE);
 
 }
 
@@ -49,11 +55,11 @@ static int hash(const char *string, const int a, const int m){
     long hash = 0;
     int len = strlen(string);
     for (int i = 0; i < len; i++){
-        hash += pow(a, (len-i-1)) * string[i];
+        hash += (int)pow(a, (len-i-1)) * string[i];
         hash = hash%m;
 
     }
-    return (int)hash;
+    return hash;
 
 }
 static int get_hash(const char* string, const int bucket_num, const int attempt){
